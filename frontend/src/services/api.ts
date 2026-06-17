@@ -22,7 +22,7 @@
  * but the next regeneration will overwrite these patches.
  */
 
-import { $httpLegacy, legacyToJson } from '../utils/legacyCompat';
+import { httpRequest } from '../utils/legacyCompat';
 
 // Base URL for API requests. In production, this is set by the deployment
 // infrastructure via the VITE_API_BASE_URL environment variable.
@@ -394,7 +394,7 @@ export async function del<T>(path: string, params?: QueryParams, config?: Reques
  * which doesn't support the new interceptor system.
  */
 export async function legacyGet<T>(url: string, params?: Record<string, string>): Promise<T> {
-  const response = await $httpLegacy<T>({
+  const response = await httpRequest<T>({
     method: 'GET',
     url: `${API_BASE_URL}${url}`,
     params,
@@ -407,7 +407,7 @@ export async function legacyGet<T>(url: string, params?: Record<string, string>)
  * @deprecated Use post() instead.
  */
 export async function legacyPost<T>(url: string, data: unknown): Promise<T> {
-  const response = await $httpLegacy<T>({
+  const response = await httpRequest<T>({
     method: 'POST',
     url: `${API_BASE_URL}${url}`,
     data,
