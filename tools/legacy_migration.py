@@ -61,7 +61,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 from dataclasses import dataclass, field, asdict
 
 # ---------------------------------------------------------------------------
@@ -983,13 +983,13 @@ def write_json_file(path: str, data: Any, pretty: bool = True) -> None:
         raise
 
 
-def batch_iterator(items: List[Any], batch_size: int):
+def batch_iterator(items: List[Any], batch_size: int) -> Iterator[Any]:
     """Iterate over items in batches."""
     for i in range(0, len(items), batch_size):
         yield items[i:i + batch_size]
 
 
-def retry_operation(operation, max_retries: int = 3, base_delay: float = 1.0):
+def retry_operation(operation: Callable, max_retries: int = 3, base_delay: float = 1.0) -> Any:
     """Retry an operation with exponential backoff."""
     for attempt in range(max_retries):
         try:
@@ -1070,7 +1070,7 @@ Examples:
     return parser
 
 
-def main():
+def main() -> None:
     """Main entry point for the migration script."""
     parser = create_arg_parser()
     args = parser.parse_args()

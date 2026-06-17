@@ -274,7 +274,7 @@ def run_health_checks(service: Optional[str] = None, json_output: bool = False) 
     return results
 
 
-def print_health_report(results: Dict[str, Any]):
+def print_health_report(results: Dict[str, Any]) -> None:
     print(f"\n{'='*60}")
     print(f"  HEALTH CHECK REPORT")
     print(f"  Host: {results['hostname']}")
@@ -300,7 +300,7 @@ def print_health_report(results: Dict[str, Any]):
     print()
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Health check tool")
     parser.add_argument("--service", "-s", help="Check specific service only")
     parser.add_argument("--json", "-j", action="store_true", help="JSON output")
@@ -310,7 +310,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     args = parse_args()
 
     if args.watch:
