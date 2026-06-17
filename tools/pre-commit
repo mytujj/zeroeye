@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# Zeroeye pre-commit hook
+# ========================
+# Runs python3 build.py and stages diagnostic/ artifacts on success.
+#
+# Install:
+#   ln -sf ../../tools/pre-commit .git/hooks/pre-commit
+#   (run from repository root)
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+    echo "[pre-commit] Error: not in a git repository"
+    exit 1
+}
+
+cd "$REPO_ROOT"
+
+echo "[pre-commit] Running python3 build.py..."
+
+if python3 build.py; then
+    echo "[pre-commit] Build succeeded, staging diagnostic artifacts..."
+    git add diagnostic/ 2>/dev/null || echo "[pre-commit] (no diagnostic artifacts found)"
+    echo "[pre-commit] Done."
+else
+    rc=$?
+    echo "[pre-commit] ERROR: build.py failed (exit code $rc). Commit aborted."
+    exit 1
+fi

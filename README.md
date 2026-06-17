@@ -1,3 +1,12 @@
+<div align="center">
+
+[![CI](https://img.shields.io/github/actions/workflow/status/lobster-trap/zeroeye/ci.yml?style=flat-square)](https://github.com/lobster-trap/zeroeye/actions)
+[![License](https://img.shields.io/github/license/lobster-trap/zeroeye?style=flat-square)](https://github.com/lobster-trap/zeroeye/blob/main/LICENSE)
+[![Top Language](https://img.shields.io/github/languages/top/lobster-trap/zeroeye?style=flat-square)](https://github.com/lobster-trap/zeroeye)
+[![EditorConfig](https://img.shields.io/badge/code_style-editorconfig-blue?style=flat-square)](https://github.com/lobster-trap/zeroeye/blob/main/.editorconfig)
+
+</div>
+
 # Tent of Trials
 
 Trading and risk platform.
