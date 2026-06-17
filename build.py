@@ -19,6 +19,8 @@ DIAGNOSTIC_DIR = ROOT / "diagnostic"
 DIAGNOSTIC_CHUNK_SIZE = 40 * 1024 * 1024
 ENCRYPTLY_BLOCKER_MESSAGE = "encryptly could not create an archive. You may have timed out; try launching it in the background and waiting for it to finish with no timeout due to a bug in encryptly."
 
+VERSION = "0.1.0"
+
 
 def current_commit_id() -> str:
     """Return the first 4 bytes (8 hex chars) of HEAD for stable per-commit diagnostics."""
@@ -782,21 +784,31 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python3 build.py                    Build all modules
-  python3 build.py -m backend         Build only backend
-  python3 build.py -m frontend,market Build frontend and market
-  python3 build.py --clean            Clean all artifacts
-  python3 build.py --release          Release build (Rust only)
-  python3 build.py --verbose          Verbose output
+  python3 build.py                          Build all modules (default)
+  python3 build.py --target backend         Build only backend
+  python3 build.py -t frontend,market       Build frontend and market
+  python3 build.py --clean                  Clean all artifacts
+  python3 build.py --release                Release build (Rust only)
+  python3 build.py -vv                      Very verbose (-v, -vv, -vvv)
+  python3 build.py --skip-diagnostics       Build without diagnostic bundle
+  python3 build.py --list-targets           List all buildable targets
+  python3 build.py --output-dir ./out       Custom output directory
+  python3 build.py --version                Show version and exit
 
-Diagnostic bundle:
+Diagnostic bundle (default):
   python3 build.py
         """,
     )
     parser.add_argument(
-        "-m", "--module",
+        "--target", "-t",
         help="Module(s) to build (comma-separated, or 'all')",
         default="all",
+        dest="module",
+    )
+    parser.add_argument(
+        "-m", "--module",
+        help=argparse.SUPPRESS,
+        dest="module",
     )
     parser.add_argument(
         "--clean", action="store_true",
@@ -807,27 +819,44 @@ Diagnostic bundle:
         help="Build in release mode (Rust backend)",
     )
     parser.add_argument(
-        "--verbose", "-v", action="store_true",
-        help="Show detailed build output",
+        "--verbose", "-v", action="count", default=0,
+        help="Increase verbosity (stackable: -v, -vv, -vvv)",
+    )
+    parser.add_argument(
+        "--skip-diagnostics", action="store_true",
+        help="Skip encryptly diagnostic bundle generation",
+    )
+    parser.add_argument(
+        "--output-dir", "-o",
+        help="Output directory for build artifacts",
+    )
+    parser.add_argument(
+        "--version", action="version",
+        version=f"%(prog)s {VERSION}",
+        help="Show version and exit",
+    )
+    parser.add_argument(
+        "--list-targets", action="store_true",
+        help="List available build targets and exit",
     )
     parser.add_argument(
         "--list", action="store_true",
-        help="List available modules and exit",
+        help=argparse.SUPPRESS,
     )
 
     args = parser.parse_args()
 
-    print(f"\n  {color('Tent of Trials: building', Colors.CYAN)}")
-    print(f"  Working directory: {ROOT}")
-    print()
-
-    if args.list:
-        print(f"  {color('Available modules:', Colors.BOLD)}")
+    if args.list_targets or args.list:
+        print(f"  {color('Available targets:', Colors.BOLD)}")
         for m in MODULES:
             print(f"    {color(m.name, Colors.CYAN)} ({m.language})")
             print(f"      dir: {m.dir.relative_to(ROOT)}")
             print(f"      build: {' '.join(m.build_cmd)}")
         return 0
+
+    print(f"\n  {color('Tent of Trials: building', Colors.CYAN)}")
+    print(f"  Working directory: {ROOT}")
+    print()
 
     print(f"  {color('Checking prerequisites...', Colors.GRAY)}")
     missing = check_prerequisites()
@@ -847,8 +876,9 @@ Diagnostic bundle:
         selected = [m for m in MODULES if m.name in names]
         not_found = set(names) - {m.name for m in MODULES}
         if not_found:
-            print(f"  {color('✗ Unknown modules:', Colors.RED)} {', '.join(not_found)}")
-            print(f"    Available: {', '.join(m.name for m in MODULES)}")
+            valid = ", ".join(m.name for m in MODULES)
+            print(f"  {color('✗ Unknown targets: ' + ', '.join(not_found), Colors.RED)}")
+            print(f"    Valid targets: {valid}")
             return 1
 
     if not selected:
@@ -858,7 +888,7 @@ Diagnostic bundle:
     if args.clean:
         print(f"\n  {color('Cleaning build artifacts...', Colors.YELLOW)}")
         for module in selected:
-            clean_module(module, args.verbose)
+            clean_module(module, bool(args.verbose))
 
         diagnostic_artifacts = [ROOT / "build.logd"]
         if DIAGNOSTIC_DIR.exists():
@@ -876,31 +906,35 @@ Diagnostic bundle:
         print(f"\n  {color('Clean complete.', Colors.GREEN)}")
         return 0
 
-    print(f"\n  {color('Checking encryptly diagnostics...', Colors.GRAY)}")
-    encryptly_start = time.time()
-    encryptly_ok, encryptly_message = check_encryptly_runs()
-    if not encryptly_ok:
-        elapsed = time.time() - encryptly_start
-        blocker = f"{ENCRYPTLY_BLOCKER_MESSAGE} {encryptly_message}"
-        print(f"  {color('✗ encryptly cannot run', Colors.RED)}")
-        print(f"  {color('BLOCKER:', Colors.RED)} {blocker}")
-        results = [("encryptly-preflight", False, elapsed, blocker, None)]
-        generate_logd(results, args.verbose)
-        return 1
-    print(f"  {color('✓ encryptly runs', Colors.GREEN)}")
+    if not args.skip_diagnostics:
+        print(f"\n  {color('Checking encryptly diagnostics...', Colors.GRAY)}")
+        encryptly_start = time.time()
+        encryptly_ok, encryptly_message = check_encryptly_runs()
+        if not encryptly_ok:
+            elapsed = time.time() - encryptly_start
+            blocker = f"{ENCRYPTLY_BLOCKER_MESSAGE} {encryptly_message}"
+            print(f"  {color('✗ encryptly cannot run', Colors.RED)}")
+            print(f"  {color('BLOCKER:', Colors.RED)} {blocker}")
+            results = [("encryptly-preflight", False, elapsed, blocker, None)]
+            generate_logd(results, bool(args.verbose))
+            return 1
+        print(f"  {color('✓ encryptly runs', Colors.GREEN)}")
 
     print(f"\n  {color(f'Building {len(selected)} module(s) | release={args.release}', Colors.GRAY)}")
 
     results: list[tuple[str, bool, float, str, Optional[str]]] = []
 
     for module in selected:
-        success, elapsed, output = build_module(module, args.release, args.verbose)
+        success, elapsed, output = build_module(module, args.release, bool(args.verbose))
         binary = verify_binary(module) if success else None
         results.append((module.name, success, elapsed, output, binary))
 
     print_summary(results)
 
-    diagnostics_ok = generate_logd(results, args.verbose)
+    if args.skip_diagnostics:
+        diagnostics_ok = True
+    else:
+        diagnostics_ok = generate_logd(results, bool(args.verbose))
 
     return 0 if diagnostics_ok and all(r[1] for r in results) else 1
 
