@@ -1,0 +1,52 @@
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+trim_trailing_whitespace = true
+
+[*.py]
+indent_style = space
+indent_size = 4
+
+[*.{ts,tsx,js,jsx,json,yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.go]
+indent_style = tab
+
+[*.{c,h}]
+indent_style = tab
+indent_size = 4
+
+[*.java]
+indent_style = space
+indent_size = 4
+
+[*.rb]
+indent_style = space
+indent_size = 2
+
+[*.rs]
+indent_style = space
+indent_size = 4
+
+[*.{pl,pm}]
+indent_style = tab
+indent_size = 4
+
+[{Makefile,makefile,GNUmakefile,*.mk}]
+indent_style = tab
+
+[Dockerfile]
+indent_style = space
+indent_size = 4
+
+[*.sh]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false

@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lobster-trap/zeroeye/schemas/order.schema.json",
+  "title": "Order",
+  "description": "A trading order in the zeroeye exchange matching engine. Maps to the Order struct in market/types/.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique order identifier",
+      "pattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "symbol": {
+      "type": "string",
+      "description": "Trading pair symbol (e.g. BTC/USDT)",
+      "examples": ["BTC/USDT", "ETH/USDT"]
+    },
+    "side": {
+      "type": "string",
+      "description": "Order side",
+      "enum": ["buy", "sell"]
+    },
+    "type": {
+      "type": "string",
+      "description": "Order type",
+      "enum": ["limit", "market", "stop_limit", "stop_market", "trailing_stop", "iceberg"]
+    },
+    "status": {
+      "type": "string",
+      "description": "Current order status",
+      "enum": ["new", "partially_filled", "filled", "cancelled", "rejected", "expired"]
+    },
+    "price": {
+      "type": "string",
+      "description": "Order price as decimal string",
+      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+    },
+    "stop_price": {
+      "type": "string",
+      "description": "Stop/trigger price for stop orders",
+      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+    },
+    "quantity": {
+      "type": "string",
+      "description": "Original order quantity",
+      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+    },
+    "filled_quantity": {
+      "type": "string",
+      "description": "Quantity filled so far",
+      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+    },
+    "remaining_quantity": {
+      "type": "string",
+      "description": "Quantity remaining unfilled",
+      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+    },
+    "leaves_quantity": {
+      "type": "string",
+      "description": "Quantity remaining after current fill (iceberg orders)",
+      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+    },
+    "cumulative_quote_quantity": {
+      "type": "string",
+      "description": "Cumulative quote currency filled",
+      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+    },
+    "avg_price": {
+      "type": "string",
+      "description": "Volume-weighted average fill price",
+      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+    },
+    "time_in_force": {
+      "type": "string",
+      "description": "Time-in-force policy",
+      "enum": ["gtc", "ioc", "fok", "gtd"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Order creation timestamp"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last update timestamp"
+    },
+    "expire_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Expiration timestamp (GTD orders only)"
+    },
+    "iceberg_quantity": {
+      "type": "string",
+      "description": "Visible quantity for iceberg orders",
+      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+    },
+    "display_quantity": {
+      "type": "string",
+      "description": "Display quantity for iceberg orders",
+      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+    }
+  },
+  "required": [
+    "id", "symbol", "side", "type", "status",
+    "price", "quantity", "time_in_force",
+    "created_at", "updated_at"
+  ],
+  "additionalProperties": false
+}
